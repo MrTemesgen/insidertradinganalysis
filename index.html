@@ -13118,7 +13118,7 @@ div#notebook {
 <p><strong>Data Extraction</strong></p>
 <p>There are many ways to get insider trading data, either directly from the SEC website or through EDGAR API. One shortcoming of the SEC website is that it requires the CIK identifier for a public company to access the website its trades are reported in. This isn't too much of a hassle, since the CIK is publicly known, but it is annoying to deal with. The bigger issue it there is often a reliability problem when doing an automated scraping of the website since the sec, for good reason doesn't want to overwhelm their servers with requests from bots.</p>
 <p>Another option is the Edgar API which is provided by the SEC and has a good request limit of ~10 a second. But the data is returned as JSON which can be decoded into a dataframe, however, there were some issues that I had with this method. Certain columns would be missing or data wasn't read into frames the way I had thought it should.</p>
-<p>The final option is to scrape from a third-party site. I chose open insider because it made querying for range effortless and had all the data on trades that I wanted in a table format.</p>
+<p>The final option is to scrape from a third-party site. I chose <a href="http://openinsider.com/">open insider</a> because it made querying for range effortless and had all the data on trades that I wanted in a table format.</p>
 
 </div>
 </div>
@@ -13153,10 +13153,16 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[157]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-python"><pre><span></span><span class="k">def</span> <span class="nf">get_cells</span><span class="p">(</span><span class="n">page</span><span class="p">):</span>
+<div class=" highlight hl-python"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This method will take a response object </span>
+<span class="sd">and extract the contents of the first </span>
+<span class="sd">table it finds into a dataframe and then return that </span>
+<span class="sd">dataframe.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">get_cells</span><span class="p">(</span><span class="n">page</span><span class="p">):</span>
   <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
   <span class="n">table</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span><span class="s1">&#39;tinytable&#39;</span><span class="p">})</span>
   <span class="n">header</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;thead&#39;</span><span class="p">)</span>
@@ -13172,6 +13178,29 @@ div#notebook {
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-cyan-fg">  File </span><span class="ansi-green-fg">&#34;&lt;ipython-input-157-6e4c39bf17fc&gt;&#34;</span><span class="ansi-cyan-fg">, line </span><span class="ansi-green-fg">15</span>
+<span class="ansi-red-fg">    return (headers, cells)</span>
+                           
+^
+<span class="ansi-red-fg">SyntaxError</span><span class="ansi-red-fg">:</span> EOF while scanning triple-quoted string literal
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -13194,6 +13223,12 @@ div#notebook {
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">cells</span><span class="p">)</span>
 <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">headers</span>
 
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This method is applied to </span>
+<span class="sd">each row of the dataframe </span>
+<span class="sd">and sets a color column based </span>
+<span class="sd">on the trade type.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="k">def</span> <span class="nf">get_color</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
   <span class="n">trade_type</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;TradeType&#39;</span><span class="p">]</span>
   <span class="k">if</span><span class="p">(</span><span class="s1">&#39;Sale&#39;</span> <span class="ow">in</span> <span class="n">trade_type</span><span class="p">):</span>
@@ -13206,6 +13241,13 @@ div#notebook {
       <span class="k">return</span> <span class="s1">&#39;orange&#39;</span>
     <span class="k">else</span><span class="p">:</span>
       <span class="k">return</span> <span class="s1">&#39;green&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This method cleans up the </span>
+<span class="sd">dataframe columns so that they use</span>
+<span class="sd">numeric values where appropriate</span>
+<span class="sd">and adds useful columns for graphing </span>
+<span class="sd">quantity </span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="k">def</span> <span class="nf">format_df</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
   <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Qty&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Qty&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
   <span class="n">df</span><span class="p">[</span><span class="s1">&#39;TradeDate&#39;</span><span class="p">]</span> <span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;TradeDate&#39;</span><span class="p">])</span>
@@ -13534,7 +13576,13 @@ Name: Price, Length: 300, dtype: object
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-python"><pre><span></span><span class="k">def</span> <span class="nf">adj_split</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">splits</span><span class="p">):</span>
+<div class=" highlight hl-python"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This method takes the splits a </span>
+<span class="sd">stock has done and applies them to</span>
+<span class="sd">legacy stock values that need to</span>
+<span class="sd">be updated</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">adj_split</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">splits</span><span class="p">):</span>
   <span class="n">split_adj</span> <span class="o">=</span> <span class="mi">1</span>
   <span class="n">trade_date</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;TradeDate&quot;</span><span class="p">]</span>
   <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">splits</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
@@ -13609,7 +13657,12 @@ Name: AdjPrice, Length: 300, dtype: float64
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-python"><pre><span></span><span class="k">def</span> <span class="nf">get_df_stock</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">ticker</span><span class="p">):</span>
+<div class=" highlight hl-python"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This metod returns the stock</span>
+<span class="sd">values in the range of dates passed</span>
+<span class="sd">for a given ticker.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">get_df_stock</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="n">ticker</span><span class="p">):</span>
   <span class="n">start_date</span> <span class="o">=</span> <span class="n">dates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
   <span class="n">end_date</span> <span class="o">=</span> <span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">months</span><span class="o">=+</span><span class="mi">4</span><span class="p">)</span>
   <span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
@@ -14212,7 +14265,12 @@ Name: AdjPrice, Length: 300, dtype: float64
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-python"><pre><span></span><span class="k">def</span> <span class="nf">graph_stock_sales</span><span class="p">(</span><span class="n">df_no_OE</span><span class="p">,</span> <span class="n">dates</span><span class="p">,</span> <span class="n">df_stock</span><span class="p">):</span>
+<div class=" highlight hl-python"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This method plots the curve of the given stock</span>
+<span class="sd">values and superimposes trades on the locations and</span>
+<span class="sd">prices they occured.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">graph_stock_sales</span><span class="p">(</span><span class="n">df_no_OE</span><span class="p">,</span> <span class="n">dates</span><span class="p">,</span> <span class="n">df_stock</span><span class="p">):</span>
   <span class="n">start_date</span> <span class="o">=</span> <span class="n">dates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
   <span class="n">end_date</span> <span class="o">=</span> <span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
   <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -14267,11 +14325,20 @@ Name: AdjPrice, Length: 300, dtype: float64
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-python"><pre><span></span><span class="k">def</span> <span class="nf">lin_reg</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<div class=" highlight hl-python"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This method returns the coefficient of the </span>
+<span class="sd">regression line between x and y</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">lin_reg</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
   <span class="n">x</span> <span class="o">=</span>	<span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
   <span class="n">y</span> <span class="o">=</span>	<span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
   <span class="n">fit</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
   <span class="k">return</span> <span class="n">fit</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This method arranges dates and opening</span>
+<span class="sd">stock values to get their regression coefficient</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="k">def</span> <span class="nf">get_st_perf</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
   <span class="n">p</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;AdjPrice&#39;</span><span class="p">]</span>
   <span class="n">d</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;TradeDate&#39;</span><span class="p">]</span>
@@ -14787,7 +14854,7 @@ strong multicollinearity or other numerical problems.
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[153]:</div>
+<div class="prompt input_prompt">In&nbsp;[158]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-python"><pre><span></span><span class="err">!</span><span class="n">cp</span> <span class="n">drive</span><span class="o">/</span><span class="n">My</span><span class="o">*/</span><span class="n">Colab</span><span class="o">*/</span><span class="n">FinalProject</span><span class="o">.</span><span class="n">ipynb</span> <span class="o">./</span>
@@ -14800,7 +14867,7 @@ strong multicollinearity or other numerical problems.
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[154]:</div>
+<div class="prompt input_prompt">In&nbsp;[159]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-python"><pre><span></span><span class="err">!</span><span class="n">jupyter</span> <span class="n">nbconvert</span> <span class="o">--</span><span class="n">to</span> <span class="n">HTML</span> <span class="s2">&quot;FinalProject.ipynb&quot;</span>
@@ -14821,7 +14888,7 @@ strong multicollinearity or other numerical problems.
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>[NbConvertApp] Converting notebook FinalProject.ipynb to HTML
-[NbConvertApp] Writing 574716 bytes to FinalProject.html
+[NbConvertApp] Writing 577633 bytes to FinalProject.html
 </pre>
 </div>
 </div>
